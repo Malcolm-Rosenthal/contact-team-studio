@@ -124,16 +124,32 @@ rawEl.addEventListener('input', () => {
 document.querySelector('#btn-raw')!.addEventListener('click', (e) => {
   isRawMode = !isRawMode;
   (e.currentTarget as HTMLButtonElement).classList.toggle('active', isRawMode);
+
   if (isRawMode) {
+    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const ratio = window.scrollY / maxScroll;
+
     rawEl.value = currentMd;
     editorEl.classList.add('hidden');
     rawEl.classList.remove('hidden');
-    rawEl.focus();
+
+    requestAnimationFrame(() => {
+      const targetScroll = Math.round(ratio * Math.max(0, rawEl.scrollHeight - rawEl.clientHeight));
+      rawEl.scrollTop = targetScroll;
+      window.scrollTo(0, 0);
+    });
   } else {
+    const maxRawScroll = Math.max(1, rawEl.scrollHeight - rawEl.clientHeight);
+    const ratio = rawEl.scrollTop / maxRawScroll;
+
     editor.commands.setContent(markdownToTiptapJSON(currentMd), { emitUpdate: false });
     rawEl.classList.add('hidden');
     editorEl.classList.remove('hidden');
-    editor.commands.focus();
+
+    requestAnimationFrame(() => {
+      const maxDocScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      window.scrollTo(0, Math.round(ratio * maxDocScroll));
+    });
   }
 });
 
